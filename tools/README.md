@@ -1,10 +1,56 @@
 # Sarama tools
+## kafka-console-consumer
 
-This folder contains applications that are useful for exploration of your Kafka cluster, or instrumentation.
-Some of these tools mirror tools that ship with Kafka, but these tools won't require installing the JVM to function.
+A simple command line tool to consume partitions of a topic and print the
+messages on the standard output.
 
-- [kafka-console-producer](./kafka-console-producer): a command line tool to produce a single message to your Kafka custer.
-- [kafka-console-partitionconsumer](./kafka-console-partitionconsumer): (deprecated) a command line tool to consume a single partition of a topic on your Kafka cluster.
-- [kafka-console-consumer](./kafka-console-consumer): a command line tool to consume arbitrary partitions of a topic on your Kafka cluster.
+### Usage
 
-To install all tools, run `go get github.com/Shopify/sarama/tools/...`
+    # Minimum invocation
+    kafka-console-consumer -topic=test -brokers=kafka1:9092
+
+    # It will pick up a KAFKA_PEERS environment variable
+    export KAFKA_PEERS=kafka1:9092,kafka2:9092,kafka3:9092
+    kafka-console-consumer -topic=test
+
+    # You can specify the offset you want to start at. It can be either
+    # `oldest`, `newest`. The default is `newest`.
+    kafka-console-consumer -topic=test -offset=oldest
+    kafka-console-consumer -topic=test -offset=newest
+
+    # You can specify the partition(s) you want to consume as a comma-separated
+    # list. The default is `all`.
+    kafka-console-consumer -topic=test -partitions=1,2,3
+
+    # Display all command line options
+    kafka-console-consumer -help
+
+## kafka-console-producer
+
+A simple command line tool to produce a single message to Kafka.
+
+### Usage
+
+    # Minimum invocation
+    kafka-console-producer -topic=test -value=value -brokers=kafka1:9092
+
+    # It will pick up a KAFKA_PEERS environment variable
+    export KAFKA_PEERS=kafka1:9092,kafka2:9092,kafka3:9092
+    kafka-console-producer -topic=test -value=value
+
+    # It will read the value from stdin by using pipes
+    echo "hello world" | kafka-console-producer -topic=test
+
+    # Specify a key:
+    echo "hello world" | kafka-console-producer -topic=test -key=key
+
+    # Partitioning: by default, kafka-console-producer will partition as follows:
+    # - manual partitioning if a -partition is provided
+    # - hash partitioning by key if a -key is provided
+    # - random partioning otherwise.
+    #
+    # You can override this using the -partitioner argument:
+    echo "hello world" | kafka-console-producer -topic=test -key=key -partitioner=random
+
+    # Display all command line options
+    kafka-console-producer -help
